@@ -1,0 +1,10 @@
+# FastTP - Best Teleporting Plugin to Teleport In Seconds And Send Request!
+
+version: 0.0.1
+
+# FastTP iS Not Based As A Configurable Plugin, You Can Customize the Timer Yet!
+
+# Select the timer you want when the Teleport Request Will be Valid!
+# Timer is Customized in Seconds Only.
+timer: 15
+# Default: 15 - It Means the Teleport Request Sent Is Valid for 15 Seconds!
