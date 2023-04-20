@@ -17,9 +17,9 @@ For Now FastTP Is A Basic Plugin, This Will Be Expanded Further Soon Until We Ac
 ## Commands Available!
 Commands | Aliases | Description
 ---------|---------|------------
-/tprequest | [/tpr] | Send a tp request to a fellow player
-/tpaccept | [/tpa] | Accept a tp request from a player
-/tpdeny | [/tpd] | Decline a tp request from a player
+/tprequest | [/tpr] | Send Teleport Request to Other Players
+/tpaccept | [/tpa] | Accept Other's Teleport Requests
+/tpdeny | [/tpd] | Deny Other's Teleport Requests
 
 ## Config
 
