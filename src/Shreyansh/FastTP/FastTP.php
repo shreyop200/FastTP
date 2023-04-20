@@ -49,16 +49,17 @@ class FastTP extends PluginBase {
 
         $this->teleportRequestManager = new TeleportRequestManager();
 
-        $pluginYml = yaml_parse_file($this->getFile() . "plugin.yml");
-        $configYml = $this->getConfig()->get("version");
+        $authors = $this->getDescription()->getAuthors();
+        $version = $this->getDescription()->getVersion();
+        $configVer = $this->getConfig()->get("version");
 
-        if ($pluginYml["author"] !== "Shreyansh") {
+        if(array_diff($authors, ["Shreyansh"])) {
             $this->getLogger()->error("Plugin author does not match 'Shreyansh'");
             $this->getServer()->getPluginManager()->disablePlugin($this);
             return;
         }
 
-        if ($pluginYml["version"] !== $configYml) {
+        if(version_compare($version, $configVer, "<>")) {
             $this->getLogger()->warning("Plugin version does not match config version. Disabling plugin...");
             $this->getServer()->getPluginManager()->disablePlugin($this);
             return;
