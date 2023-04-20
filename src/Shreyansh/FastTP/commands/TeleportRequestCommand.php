@@ -66,6 +66,6 @@ class TeleportRequestCommand extends Command implements PluginOwned {
 
 
     public function getOwningPlugin(): Plugin {
-        return TeleportationsX::getInstance();
+        return FastTP::getInstance();
     }
 }
