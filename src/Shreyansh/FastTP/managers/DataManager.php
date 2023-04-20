@@ -6,13 +6,30 @@ namespace Shreyansh\FastTP\managers;
 
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
+use pocketmine\Server;
+use pocketmine\scheduler\ClosureTask;
+use pocketmine\scheduler\TaskHandler;
 use Shreyansh\FastTP\FastTP;
+use Shreyansh\FastTP\tasks\SQLiteTask;
 
 class DataManager {
 
-    public static function init() {
+    public static function init(): void {
         FastTP::getInstance()->saveDefaultConfig();
         FastTP::getInstance()->saveResource("setup.yml");
+
+        $query = "CREATE TABLE IF NOT EXISTS teleport_requests (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sender_uuid TEXT NOT NULL,
+                    sender_name TEXT NOT NULL,
+                    recipient_uuid TEXT NOT NULL,
+                    recipient_name TEXT NOT NULL,
+                    x FLOAT NOT NULL,
+                    y FLOAT NOT NULL,
+                    z FLOAT NOT NULL,
+                    world TEXT NOT NULL
+                )";
+        self::executeQuery($query);
 
         FastTP::getInstance()->prepare = FastTP::getInstance()->db2->prepare("SELECT * FROM sqlite_master WHERE type = 'table' AND name = 'spawn'");
         FastTP::getInstance()->result = FastTP::getInstance()->prepare->execute();
@@ -60,6 +77,23 @@ class DataManager {
         }
     }
 
+    public static function executeQuery(string $query, ?callable $callback = null): void {
+        $plugin = FastTP::getInstance();
+        $task = new SQLiteTask($query);
+        if ($callback !== null) {
+            $task->setOnCompletion($callback);
+        }
+        Server::getInstance()->getAsyncPool()->submitTask($task);
+    }
+
+    public static function executeQuerySync(string $query): \Generator {
+        $plugin = FastTP::getInstance();
+        $task = new SQLiteTask($query);
+        $handler = Server::getInstance()->getAsyncPool()->submitTask($task);
+        while(!$handler->isCompleted()) {
+            yield;
+        }
+    }
 
     public static function rowsCount(): array {
         $row = [];
