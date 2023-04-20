@@ -50,7 +50,7 @@ class TeleportRequestCommand extends Command implements PluginOwned {
             return;
         }
 
-        $teleportRequestManager = TeleportationsX::getInstance()->getTeleportRequestManager();
+        $teleportRequestManager = FastTP::getInstance()->getTeleportRequestManager();
 
         if($teleportRequestManager->requestExists($sender, $receiver)) {
             $sender->sendMessage(DataManager::getMessage("already_active_request"));
@@ -61,7 +61,7 @@ class TeleportRequestCommand extends Command implements PluginOwned {
         $sender->sendMessage(DataManager::getMessage("teleport_request_send", ["RECEIVER" => $receiver->getName()]));
         $receiver->sendMessage(DataManager::getMessage("teleport_request_received", [
             "SENDER" => $sender->getName(),
-            "VALIDITY_TIME" => TeleportationsX::getInstance()->getConfig()->get("teleport_request_validity")]));
+            "VALIDITY_TIME" => FastTP::getInstance()->getConfig()->get("teleport_request_validity")]));
     }
 
 
