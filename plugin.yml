@@ -1,0 +1,16 @@
+name: FastTP
+main: Shreyansh\FastTP\FastTP
+api: 4.0.0
+version: 0.0.1
+author: Shreyansh
+
+permissions:
+  fasttp.teleport:
+    default: true
+    description: Get Perms to send teleport request!
+  fasttp.accept:
+    default: op
+    description: Accept others teleport request
+  fasttp.deny:
+    default: op
+    description: Deny others teleport request
