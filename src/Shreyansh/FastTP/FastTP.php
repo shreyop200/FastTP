@@ -78,6 +78,7 @@ class FastTP extends PluginBase {
             return;
         }
 
+        DataManager::executeQuery("PRAGMA journal_mode=WAL");
         DataManager::init();
         $this->registerCommands();
     }
