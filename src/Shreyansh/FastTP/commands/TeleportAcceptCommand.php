@@ -12,6 +12,8 @@ use pocketmine\utils\TextFormat;
 use pocketmine\utils\TextFormat as C;
 use Shreyansh\FastTP\managers\DataManager;
 use Shreyansh\FastTP\FastTP;
+use pocketmine\form\MenuOption;
+use pocketmine\form\SimpleForm;
 
 class TeleportAcceptCommand extends Command implements PluginOwned {
 
