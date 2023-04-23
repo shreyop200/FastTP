@@ -11,6 +11,8 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use Shreyansh\FastTP\managers\DataManager;
 use Shreyansh\FastTP\FastTP;
+use pocketmine\form\MenuOption;
+use pocketmine\form\SimpleForm;
 
 class TeleportRequestCommand extends Command implements PluginOwned {
 
@@ -38,30 +40,51 @@ class TeleportRequestCommand extends Command implements PluginOwned {
             return;
         }
 
-        $receiver = Server::getInstance()->getPlayerExact($args[0]);
+        $playerList = [];
+        foreach(Server::getInstance()->getOnlinePlayers() as $player) {
+            if($player->getName() !== $sender->getName()) {
+                $playerList[] = new MenuOption($player->getName());
+            }
+        }
 
-        if(!$receiver instanceof Player or !$receiver->isOnline()) {
-            $sender->sendMessage(DataManager::getMessage("invalid_player"));
+        if(empty($playerList)) {
+            $sender->sendMessage(DataManager::getMessage("no_players_online"));
             return;
         }
 
-        if($sender->getName() === $receiver->getName()) {
-            $sender->sendMessage(DataManager::getMessage("cannot_send_request_to_yourself"));
-            return;
-        }
+        $form = new SimpleForm(function(Player $receiver, ?int $data) use ($sender) {
+            if($data !== null) {
+                $teleportRequestManager = FastTP::getInstance()->getTeleportRequestManager();
+                $chosenPlayerName = $receiver->getDropdown($data)->getText();
+                $chosenPlayer = Server::getInstance()->getPlayerExact($chosenPlayerName);
 
-        $teleportRequestManager = FastTP::getInstance()->getTeleportRequestManager();
+                if(!$chosenPlayer instanceof Player or !$chosenPlayer->isOnline()) {
+                    $sender->sendMessage(DataManager::getMessage("invalid_player"));
+                    return;
+                }
 
-        if($teleportRequestManager->requestExists($sender, $receiver)) {
-            $sender->sendMessage(DataManager::getMessage("already_active_request"));
-            return;
-        }
+                if($sender->getName() === $chosenPlayer->getName()) {
+                    $sender->sendMessage(DataManager::getMessage("cannot_send_request_to_yourself"));
+                    return;
+                }
 
-        $teleportRequestManager->dispatchRequest($sender, $receiver);
-        $sender->sendMessage(DataManager::getMessage("teleport_request_send", ["RECEIVER" => $receiver->getName()]));
-        $receiver->sendMessage(DataManager::getMessage("teleport_request_received", [
-            "SENDER" => $sender->getName(),
-            "VALIDITY_TIME" => FastTP::getInstance()->getConfig()->get("teleport_request_validity")]));
+                if($teleportRequestManager->requestExists($sender, $chosenPlayer)) {
+                    $sender->sendMessage(DataManager::getMessage("already_active_request"));
+                    return;
+                }
+
+                $teleportRequestManager->dispatchRequest($sender, $chosenPlayer);
+                $sender->sendMessage(DataManager::getMessage("teleport_request_send", ["RECEIVER" => $chosenPlayer->getName()]));
+                $chosenPlayer->sendMessage(DataManager::getMessage("teleport_request_received", [
+                    "SENDER" => $sender->getName(),
+                    "VALIDITY_TIME" => FastTP::getInstance()->getConfig()->get("teleport_request_validity")]));
+            }
+        });
+
+        $form->setTitle(DataManager::getMessage("teleport_request_send_title"));
+        $form->setContent(DataManager::getMessage("teleport_request_send_content"));
+        $form->addDropdown(DataManager::getMessage("teleport_request_send_dropdown"), $playerList);
+        $sender->sendForm($form);
     }
 
 
