@@ -8,6 +8,40 @@ class TeleportRequestManager {
 
     private array $requests = [];
 
+    public function sendRequest(Player $sender, Player $receiver) {
+        $this->requests[$sender->getName()][$receiver->getName()] = true;
+
+        $api = $sender->getServer()->getPluginManager()->getPlugin("FormAPI");
+
+        if($api === null) {
+            $sender->sendMessage("§cError: FormAPI is not installed.");
+            return;
+        }
+
+        $form = $api->createModalForm(function(Player $sender, ?bool $data) use ($receiver) {
+            if($data === null) {
+                return;
+            }
+
+            if($data) {
+                $sender->teleport($receiver->getPosition());
+                $this->closeRequest($sender, $receiver);
+                $sender->sendMessage(DataManager::getMessage("sender_teleport_request_accepted", ["RECEIVER" => $receiver->getName()]));
+                $receiver->sendMessage(DataManager::getMessage("receiver_teleport_request_accepted"));
+            } else {
+                $this->closeRequest($sender, $receiver);
+                $sender->sendMessage(DataManager::getMessage("sender_teleport_request_denied", ["RECEIVER" => $receiver->getName()]));
+                $receiver->sendMessage(DataManager::getMessage("receiver_teleport_request_denied"));
+            }
+        });
+
+        $form->setTitle("Teleport Request from " . $sender->getName());
+        $form->setContent("Do you want to accept or deny the teleport request from " . $sender->getName() . "?");
+        $form->setButton1("Accept");
+        $form->setButton2("Deny");
+        $form->sendToPlayer($receiver);
+    }
+
     public function dispatchRequest(string $sender, string $receiver): void {
         $this->requests[$receiver][] = [
             $sender,
