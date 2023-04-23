@@ -39,7 +39,8 @@ class TeleportAcceptCommand extends Command implements PluginOwned {
         }
 
         $receiver = $sender;
-        $sender = Server::getInstance()->getPlayerExact($args[0]);
+        $senderName = implode(" ", $args);
+        $sender = Server::getInstance()->getPlayerExact($senderName);
 
         if(!$sender instanceof Player or !$sender->isOnline()) {
             $receiver->sendMessage(DataManager::getMessage("invalid_player"));
@@ -53,11 +54,35 @@ class TeleportAcceptCommand extends Command implements PluginOwned {
             return;
         }
 
-        $receiver->teleport($sender->getPosition());
+        $api = $sender->getServer()->getPluginManager()->getPlugin("FormAPI");
 
-        $teleportRequestManager->closeRequest($sender, $receiver);
-        $sender->sendMessage(DataManager::getMessage("sender_teleport_request_accepted", ["RECEIVER" => $receiver->getName()]));
-        $receiver->sendMessage(DataManager::getMessage("receiver_teleport_request_accepted"));
+        if($api === null) {
+            $sender->sendMessage("§cError: FormAPI is not installed.");
+            return;
+        }
+
+        $form = $api->createModalForm(function(Player $sender, ?bool $data) use ($receiver, $senderName, $teleportRequestManager) {
+            if($data === null) {
+                return;
+            }
+
+            if($data) {
+                $sender->teleport($receiver->getPosition());
+                $teleportRequestManager->closeRequest($receiver, $sender);
+                $sender->sendMessage(DataManager::getMessage("sender_teleport_request_accepted", ["RECEIVER" => $receiver->getName()]));
+                $receiver->sendMessage(DataManager::getMessage("receiver_teleport_request_accepted"));
+            } else {
+                $teleportRequestManager->closeRequest($receiver, $sender);
+                $sender->sendMessage(DataManager::getMessage("sender_teleport_request_denied", ["RECEIVER" => $receiver->getName()]));
+                $receiver->sendMessage(DataManager::getMessage("receiver_teleport_request_denied"));
+            }
+        });
+
+        $form->setTitle("Teleport Request from $senderName");
+        $form->setContent("Do you want to accept or deny the teleport request from $senderName?");
+        $form->setButton1("Accept");
+        $form->setButton2("Deny");
+        $form->sendToPlayer($receiver);
     }
 
     public function getOwningPlugin(): Plugin {
