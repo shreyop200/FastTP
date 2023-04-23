@@ -73,6 +73,8 @@ class TeleportRequestCommand extends Command implements PluginOwned {
                     return;
                 }
 
+
+                $this->sendTeleportRequest($sender, $receiver);
                 $teleportRequestManager->dispatchRequest($sender, $chosenPlayer);
                 $sender->sendMessage(DataManager::getMessage("teleport_request_send", ["RECEIVER" => $chosenPlayer->getName()]));
                 $chosenPlayer->sendMessage(DataManager::getMessage("teleport_request_received", [
@@ -87,6 +89,12 @@ class TeleportRequestCommand extends Command implements PluginOwned {
         $sender->sendForm($form);
     }
 
+
+    private function sendTeleportRequest(Player $sender, Player $receiver) {
+        $teleportRequestManager = FastTP::getInstance()->getTeleportRequestManager();
+        $teleportRequestManager->sendRequest($sender, $receiver);
+
+    }
 
     public function getOwningPlugin(): Plugin {
         return FastTP::getInstance();
